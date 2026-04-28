@@ -10,6 +10,7 @@ from datetime import datetime
 from werkzeug.wrappers import Response
 from frappe.utils import getdate, nowdate
 from frappe.utils import random_string
+from frappe import _
 
 class GAuth:
     """Authentication handler for employee app token generation and management."""
@@ -425,3 +426,36 @@ def create_attendence_request(employee, from_date, to_date,from_time,to_time,rea
 
 
 
+@frappe.whitelist(allow_guest=False)
+def validate_location_restriction(employee, latitude, longitude):
+    try:
+        # Placeholder for actual location validation logic
+        # You can implement geofencing or other location-based checks here
+
+        # For demonstration, let's assume the location is valid if latitude and longitude are within certain bounds
+        if 10.0 <= latitude <= 50.0 and 60.0 <= longitude <= 100.0:
+            return Response(
+                json.dumps({"message": "Location is valid."}),
+                status=200,
+                mimetype="application/json"
+            )
+        else:
+            return Response(
+                json.dumps({"message": "Location is invalid."}),
+                status=400,
+                mimetype="application/json"
+            )
+
+    except Exception as e:
+        return Response(
+            json.dumps({"message": f"Error validating location: {str(e)}"}),
+            status=500,
+            mimetype="application/json"
+        )
+
+
+
+def validate_location_restriction(doc, method):
+    if doc.custom_restrict_location:
+        if not doc.custom_employee_location1 or len(doc.custom_employee_location1) == 0:
+            frappe.throw(_("Please add at least one location when 'Restrict Location' is enabled."))
