@@ -30,6 +30,9 @@ doc_events = {
     },
      "Attendance": {
         "validate": "employee_app.attendance_api.override_working_hours"
+    },
+    "Employee Location": {
+        "validate": "employee_app.gauth.validate_coordinates"
     }
 }
 

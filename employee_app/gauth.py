@@ -11,6 +11,8 @@ from werkzeug.wrappers import Response
 from frappe.utils import getdate, nowdate
 from frappe.utils import random_string
 from frappe import _
+import re
+
 
 class GAuth:
     """Authentication handler for employee app token generation and management."""
@@ -459,3 +461,49 @@ def validate_location_restriction(doc, method):
     if doc.custom_restrict_location:
         if not doc.custom_employee_location1 or len(doc.custom_employee_location1) == 0:
             frappe.throw(_("Please add at least one location when 'Restrict Location' is enabled."))
+
+
+
+
+def validate_coordinates(doc, method=None):
+
+    decimal_pattern = r"^-?\d+(\.\d+)?$"
+
+    lat = doc.lat
+    lng = doc.long
+
+
+    if (lat and not lng) or (lng and not lat):
+        frappe.throw(_("Both Latitude and Longitude are required together."))
+
+
+    if lat not in [None, ""]:
+        lat_str = str(lat).strip()
+
+        if not re.match(decimal_pattern, lat_str):
+            frappe.throw(
+                _("Latitude format is invalid. Use decimal format only (example: 11.532393).")
+            )
+
+        lat_value = float(lat_str)
+
+        if lat_value < -90 or lat_value > 90:
+            frappe.throw(
+                _("Latitude must be between -90 and 90.")
+            )
+
+
+    if lng not in [None, ""]:
+        lng_str = str(lng).strip()
+
+        if not re.match(decimal_pattern, lng_str):
+            frappe.throw(
+                _("Longitude format is invalid. Use decimal format only (example: 75.615743).")
+            )
+
+        lng_value = float(lng_str)
+
+        if lng_value < -180 or lng_value > 180:
+            frappe.throw(
+                _("Longitude must be between -180 and 180.")
+            )
